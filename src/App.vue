@@ -1,20 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 // chave guardada escondidinha 
 const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY
 
 // dados que mudam na tela.
-const temperature = ref(null)
-const weatherMain = ref('')
+const temperature = ref<number | null>(null);
+const weatherMain = ref<string>('')
 const description = ref('')
 const city = ref('')
 const searchCity = ref('')
-const icon = ref('')
+const icon = ref<string>('');
 const now = ref(new Date())
 const loading = ref(false)
 const error = ref('')
-let clock
+let clock: ReturnType<typeof window.setInterval>
 
 // formatos de data e hora usados no template.
 const formattedDate = computed(() => {
@@ -34,7 +34,7 @@ const formattedTime = computed(() => {
 })
 
 // tradução do nome da condição que vem em inglês da OpenWeather.
-const conditionTranslations = {
+const conditionTranslations: Record<string, string> = {
   Clear: 'Céu limpo',
   Clouds: 'Nublado',
   Rain: 'Chuva',
@@ -56,16 +56,20 @@ const weatherConditionPT = computed(() => {
 const weatherImage = computed(() => {
   const isNight = icon.value.endsWith('n')
 
-  if (description.value === 'chuva leve') return '/imagens/chuvisco.png'
-  if (weatherMain.value === 'Clear') return isNight ? '/imagens/noite.png' : '/imagens/sol.png'
-  if (weatherMain.value === 'Clouds') return isNight ? '/imagens/noitecomnuvens.png' : '/imagens/nublado.png'
-  if (weatherMain.value === 'Rain' || weatherMain.value === 'Thunderstorm') return '/imagens/chuva.png'
-  if (weatherMain.value === 'Drizzle') return '/imagens/chuvisco.png'
-  return '/imagens/sol.png'
+if (description.value === 'chuva leve') return '/imagens/chuvisco.png'
+if (weatherMain.value === 'Clear') return isNight ? '/imagens/noite.png' : '/imagens/sol.png'
+if (weatherMain.value === 'Clouds') return isNight ? 'getimagens/noitecomnuvens.png' : '/imagens/nublado.png'
+if (weatherMain.value === 'Rain' || weatherMain.value === 'Thunderstorm') return '/imagens/chuva.png'
+if (weatherMain.value === 'Drizzle') return '/imagens/chuvisco.png'
+return '/imagens/sol.png'
 })
 
 // atualiza os dados exibidos depois que a API responde.
-function updateWeather(data) {
+function updateWeather(data: {
+  main: { temp: number }
+  weather: Array<{ main: string; description: string; icon: string }>
+  name: string
+}) {
   temperature.value = Math.round(data.main.temp)
   weatherMain.value = data.weather[0].main
   description.value = data.weather[0].description
@@ -74,7 +78,7 @@ function updateWeather(data) {
 }
 
 // faz a requisição para a API. "params" pode conter cidade ou latitude/longitude.
-async function requestWeather(params) {
+async function requestWeather(params: Record<string, string>) {
   if (!apiKey) {
     error.value = 'Configure VITE_OPENWEATHER_API_KEY no arquivo .env.'
     return
@@ -95,7 +99,7 @@ async function requestWeather(params) {
     }
     updateWeather(data)
   } catch (err) {
-    error.value = err.message === 'city not found'
+    error.value = err instanceof Error && err.message === 'city not found'
       ? 'Cidade não encontrada. Confira o nome e tente novamente.'
       : 'Não foi possível carregar o clima. Tente novamente.'
   } finally {
@@ -107,6 +111,8 @@ async function requestWeather(params) {
 function searchWeather() {
   const query = searchCity.value.trim()
   if (query) requestWeather({ q: query })
+  // limpa o historico de pesquisa 
+  searchCity.value = ''
 }
 
 // pede a localização do navegador e pesquisa o clima nas coordenadas recebidas.
@@ -115,6 +121,7 @@ function useLocation() {
     error.value = 'Seu navegador não oferece suporte à localização.'
     return
   }
+  searchCity.value = ''
   navigator.geolocation.getCurrentPosition(
     ({ coords }) => {
       requestWeather({
@@ -139,7 +146,7 @@ onBeforeUnmount(() => window.clearInterval(clock))
 
 <template>
   <!-- principal y responsividade -->
-  <main class="min-h-screen bg-[#f6f7fb] px-3 py-6 font-sans text-slate-800 xs:px-4 xs:py-10 sm:grid sm:place-items-center flex-wrap gap-4">
+  <main class="min-h-screen bg-[#f6f7fb] px-3 py-6 font-sans text-slate-800 xs:px-4 xs:py-10 sm:grid sm:place-items-center">
     
     <!-- interface  -->
     <section class="w-full max-w-2xl rounded-xl bg-white p-5 shadow-lg shadow-slate-300/40 xs:p-6 sm:rounded-2xl sm:p-10">
@@ -163,7 +170,7 @@ onBeforeUnmount(() => window.clearInterval(clock))
           <svg class="h-5 w-5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/>
           </svg>
-          <input id="city" v-model="searchCity" class="w-full bg-transparent py-3.5 outline-none placeholder:text-slate-400 text-sm xs:text-base" type="search" placeholder="Digite seu local">
+          <input id="city" v-model="searchCity" autocomplete="off" class="w-full bg-transparent py-3.5 outline-none placeholder:text-slate-400 text-sm xs:text-base" type="search" placeholder="Digite seu local">
         </div>
 
         <!-- Botões lado a lado em telas pequenas para economizar espaço vertical -->
@@ -199,14 +206,14 @@ onBeforeUnmount(() => window.clearInterval(clock))
           <!-- hora -->
           <div class="p-3 xs:p-4">
             <img class="mx-auto h-4 w-4 xs:h-5 xs:w-5" src="/imagens/relogio.svg" alt="Hora">
-            <p class="mt-1.5 text-[10px] uppercase tracking-wide text-slate-400 xs:mt-2">Hora</p>
+            <p class="mt-1.5 text-[10px] uppercase tracking-wide text-slate-400 xs:mt-2"></p>
             <p class="mt-0.5 text-sm font-semibold xs:mt-1 xs:text-base">{{ formattedTime }}</p>
           </div>
 
           <!-- data -->
           <div class="p-3 xs:p-4">
             <img class="mx-auto h-4 w-4 xs:h-5 xs:w-5" src="/imagens/data.svg" alt="Data">
-            <p class="mt-1.5 text-[10px] uppercase tracking-wide text-slate-400 xs:mt-2">Data</p>
+            <p class="mt-1.5 text-[10px] uppercase tracking-wide text-slate-400 xs:mt-2"></p>
             <p class="mt-0.5 text-sm font-semibold xs:mt-1 xs:text-base">
               {{ now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) }}
             </p>
