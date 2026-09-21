@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { useWeather } from './useWeather'
-  import WeatherForm from './weatherForm.vue'
+  import WeatherForm from './components/weatherForm.vue'
+  import { useWeather } from './composables/useWeather'
 
   // Importa toda a lógica do nosso composable
   const {
@@ -67,7 +67,7 @@
           </div>
           <div>
             <span class="text-5xl font-bold tracking-tighter text-slate-800 sm:text-6xl"
-              >{{ temperature }}°C</span
+              >{{ temperature }}°</span
             >
             <p class="mt-1 text-base font-medium text-slate-500 sm:text-lg">
               {{ weatherConditionPT }}
