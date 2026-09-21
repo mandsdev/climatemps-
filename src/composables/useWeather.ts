@@ -1,7 +1,6 @@
 import type { ComputedRef, Ref } from 'vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-// 1. Definindo as interfaces corretas para o TypeScript parar de reclamar de 'any' ou 'unknown'
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
@@ -62,7 +61,7 @@ interface UseWeatherReturn {
 export function useWeather(): UseWeatherReturn {
   const apiKey = String(import.meta.env.VITE_OPENWEATHER_API_KEY ?? '')
 
-  // Dados reativos com tipos explícitos
+  // dados reativos com tipos explícitos
   const temperature = ref<number | null>(null)
   const weatherMain = ref<string>('')
   const description = ref('')
@@ -74,7 +73,7 @@ export function useWeather(): UseWeatherReturn {
   const error = ref('')
   let clock: ReturnType<typeof globalThis.setInterval>
 
-  // Formatos de data e hora
+  // formatos de data e hora
   const formattedDate = computed(() =>
     new Intl.DateTimeFormat('pt-BR', {
       weekday: 'long',
@@ -91,7 +90,7 @@ export function useWeather(): UseWeatherReturn {
     }).format(now.value),
   )
 
-  // Traduções das condições climáticas
+  // traduções das condições climáticas
   const conditionTranslations: Record<string, string> = {
     Clear: 'Céu limpo',
     Clouds: 'Nublado',
@@ -110,7 +109,7 @@ export function useWeather(): UseWeatherReturn {
     () => conditionTranslations[weatherMain.value] || weatherMain.value || '--',
   )
 
-  // Imagens dinâmicas baseadas no clima
+  // imagens dinâmicas baseadas no clima
   const weatherImage = computed(() => {
     const isNight = icon.value.endsWith('n')
 
@@ -126,7 +125,7 @@ export function useWeather(): UseWeatherReturn {
     return '/imagens/sol.png'
   })
 
-  // Corrigido: data agora usa a interface estrita WeatherResponse
+  // corrigido: data agora usa a interface estrita WeatherResponse
   function updateWeather(data: WeatherResponse): void {
     temperature.value = Math.round(data.main.temp)
     weatherMain.value = data.weather[0].main
@@ -153,7 +152,7 @@ export function useWeather(): UseWeatherReturn {
       const data = await response.json().then((body: unknown): unknown => body)
 
       if (!response.ok) {
-        // Se a resposta der erro estruturado da API
+        // se a resposta der erro estruturado da API
         const message =
           isRecord(data) && typeof data.message === 'string'
             ? data.message
@@ -196,7 +195,7 @@ export function useWeather(): UseWeatherReturn {
     )
   }
 
-  // Controle do relógio interno
+  // controle do relógio interno
   onMounted(() => {
     clock = globalThis.setInterval(() => {
       now.value = new Date()
