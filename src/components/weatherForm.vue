@@ -9,7 +9,7 @@
     },
   })
 
-  // Emite eventos para o arquivo pai quando o usuário interagir
+  // emite eventos para o arquivo pai quando o usuário interagir
   defineEmits<{
     (event: 'submit' | 'locate'): void
   }>()
