@@ -2,7 +2,7 @@
   import WeatherForm from './components/weatherForm.vue'
   import { useWeather } from './composables/useWeather'
 
-  // Importa toda a lógica do nosso composable
+  // importa a lógica 
   const {
     city,
     searchCity,
@@ -36,7 +36,7 @@
         <p class="xs:text-sm xs:text-right text-xs text-slate-400">{{ formattedTime }}</p>
       </header>
 
-      <!-- Componente do formulário isolado -->
+      <!-- componente do formulário isolado -->
       <WeatherForm
         v-model="searchCity"
         :loading="loading"
@@ -59,7 +59,7 @@
       <section v-else class="mt-7 overflow-hidden rounded-xl border border-slate-200 bg-[#f4f6fc]">
         <div class="xs:gap-6 xs:p-7 grid items-center gap-4 p-5 sm:grid-cols-[1fr_1.15fr] sm:p-9">
           <div class="xs:min-h-[200px] grid min-h-40 place-items-center sm:min-h-64">
-            <!-- Seu código de imagem continuaria aqui mapeando as variáveis extraídas do composable -->
+        
             <img
               :src="weatherImage"
               :alt="weatherConditionPT"
